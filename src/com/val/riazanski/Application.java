@@ -2,50 +2,65 @@ package com.val.riazanski;
 
 class Application {
     //fields
-    private String text;
-    private Editor editor;
-    private CommandHistory history;
-    private static int mark;
-    private static  int dot;
+    private final Editor editor;
+    private final CommandHistory history;
+    private String clipboard ="";
     //constructors
-    public Application(Editor editor, String text) {
-        this.text = text;
+    public Application(Editor editor) {
         this.editor = editor;
         history = new CommandHistory();
     }
     //methods
-    public void setMark(int mark) {
-        this.mark = mark;
-    }
-    public void setMarkDot(int mark, int dot) {
-        this.mark = mark;
-        this.dot = dot;
-    }
     public void setText(String text) {
-        this.text = text;
         editor.setText(text);
-    }public String getText() {
+    }
+    public void setClipboard(String str) {
+        this.clipboard = str;
+    }
+    public String getClipboard() {
+        return this.clipboard;
+    }
+    public String getText() {
         return editor.getText();
     }
-    public static String clipBoard(String str) {
-        return str;
+    public void executeCommand(Command command) {
+        if (command.execute()) {
+            history.push(command);
+            history.pushBackup(command);
+        }
     }
     public void unDo() {
+        Command command = history.pop();
+        //System.out.println("undo " + command.getBackup());
+        if (command != null) {
+            String str = history.popBackup();
+            this.editor.setText(str);
+            //command.unDo();
+        }
 
     }
     public static void main(String[] args) {
         String text = "lwqekfjqwlekfj'qwel;kfjq'w;elfkj;wqe";
         Editor editor = new Editor(text);
-        Application app = new Application(editor,text);
+        Application app = new Application(editor);
         System.out.println(app.getText());
-        app.setText("эцущкгтэцузкгщстгэцйзущзкгстэзцущкг");
+        app.setText("результат работы команды COPY проверяем в текстовом окне");
         System.out.println(app.getText());
-        CutCommand cut = new CutCommand(app, editor, 2, 9);
-        if (cut.execute()) {
-        app.history.push(cut);
-        }
-        System.out.println(app.history.toString());
-        System.out.println(app.getText());
+        CutCommand cut = new CutCommand(app, editor, 3,7);
+        System.out.println("stackSize= " + app.history.stackSize() + " "  + app.getText());
+        app.executeCommand(cut);
+        System.out.println("stackSize= " + app.history.stackSize() + " "  + app.getText());
+        app.executeCommand(cut);
+        System.out.println("stackSize= " + app.history.stackSize() + " "  + app.getText());
+        app.executeCommand(cut);
+        System.out.println("stackSize= " + app.history.stackSize() + " "  + app.getText());
+        app.unDo();
+        System.out.println("stackSize= " + app.history.stackSize() + " "  + app.getText());
+        app.unDo();
+        System.out.println("stackSize= " + app.history.stackSize() + " "  + app.getText());
+        app.unDo();
+        System.out.println("stackSize= " + app.history.stackSize() + " "  + app.getText());
+
     }
 
 
